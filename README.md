@@ -77,7 +77,7 @@ c-source = true
 
 ```
 
-### 3. Build & Run
+### 3. Build
 
 Execute the recompilation pipeline:
 
