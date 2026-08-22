@@ -83,7 +83,6 @@ Execute the recompilation pipeline:
 
 ```bash
 gba-pack pack.toml
-./build/SonicAdvance
 
 ```
 
