@@ -1,4 +1,4 @@
-name: Build Executables (Multiplatform)
+name: Build Sonic Advance Recomp (Rust)
 
 on:
   push:
@@ -9,89 +9,81 @@ on:
 
 jobs:
   # ====================================================
-  # 1. BUILD WINDOWS (SonicAdvance.exe + DLLs)
+  # 1. WINDOWS BUILD (.exe + .dll)
   # ====================================================
   build-windows:
-    name: Windows Build (.exe)
+    name: Build Windows (x64)
     runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Dependencies (SDL2)
-        run: choco install sdl2 cmake --no-progress
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build Executable
-        run: cmake --build build --config Release
+      - name: Build Release Binary
+        run: cargo build --release
 
       - name: Upload Windows Bundle
         uses: actions/upload-artifact@v4
         with:
           name: SonicAdvance-Windows-x64
           path: |
-            build/Release/*.exe
-            build/Release/*.dll
-            build/*.exe
-            build/*.dll
+            target/release/*.exe
+            target/release/*.dll
 
   # ====================================================
-  # 2. BUILD MACOS (SonicAdvance App / Binário)
+  # 2. MACOS BUILD (Nativo / Apple Silicon & Intel)
   # ====================================================
   build-macos:
-    name: macOS Build
+    name: Build macOS
     runs-on: macos-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Dependencies (SDL2)
-        run: brew install sdl2 cmake
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build Executable
-        run: cmake --build build --config Release
+      - name: Build Release Binary
+        run: cargo build --release
 
       - name: Upload macOS Bundle
         uses: actions/upload-artifact@v4
         with:
           name: SonicAdvance-macOS
           path: |
-            build/SonicAdvance
-            build/*.dylib
+            target/release/SonicAdvance*
+            target/release/*.dylib
 
   # ====================================================
-  # 3. BUILD LINUX (SonicAdvance Linux Executable)
+  # 3. LINUX BUILD (.so + Binário)
   # ====================================================
   build-linux:
-    name: Linux Build
+    name: Build Linux (x86_64)
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libsdl2-dev
+          sudo apt-get install -y build-essential libasound2-dev libudev-dev
 
-      - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Build Executable
-        run: cmake --build build --config Release
+      - name: Build Release Binary
+        run: cargo build --release
 
       - name: Upload Linux Bundle
         uses: actions/upload-artifact@v4
         with:
           name: SonicAdvance-Linux
           path: |
-            build/SonicAdvance
-            build/*.so
+            target/release/SonicAdvance*
+            target/release/*.so
