@@ -1,4 +1,4 @@
-name: Build Sonic Advance Recomp (Clang)
+name: Build Sonic Advance Recomp (Clang Root)
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   # ====================================================
-  # 1. WINDOWS BUILD (Clang -> .exe / .dll)
+  # 1. WINDOWS BUILD (.dll na raiz)
   # ====================================================
   build-windows:
     name: Build Windows (Clang)
@@ -22,21 +22,20 @@ jobs:
       - name: Install SDL2 (Windows)
         run: choco install sdl2 --no-progress
 
-      - name: Compile Executable & DLL with Clang
-        shell: cmd
+      - name: Compile DLL in Root
+        shell: powershell
         run: |
-          clang -O2 pack-out/work/out/*.c -o SonicAdvance.exe -lSDL2 -lSDL2main -mwindows
+          $files = Get-ChildItem -Path ./*.c | Select-Object -ExpandProperty FullName
+          clang -shared -O2 $files -o ./SonicAdvance-bios.dll -lSDL2
 
-      - name: Upload Windows Bundle
+      - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
           name: SonicAdvance-Windows
-          path: |
-            *.exe
-            *.dll
+          path: SonicAdvance-bios.dll
 
   # ====================================================
-  # 2. MACOS BUILD (Clang -> Executável / .dylib)
+  # 2. MACOS BUILD (.dylib na raiz)
   # ====================================================
   build-macos:
     name: Build macOS (Clang)
@@ -49,20 +48,18 @@ jobs:
       - name: Install SDL2 (macOS)
         run: brew install sdl2
 
-      - name: Compile Executable with Clang
+      - name: Compile dylib in Root
         run: |
-          clang -O2 pack-out/work/out/*.c -o SonicAdvance -lSDL2 -framework Cocoa
+          clang -dynamiclib -O2 ./*.c -o ./SonicAdvance-bios.dylib -lSDL2 -framework Cocoa
 
-      - name: Upload macOS Bundle
+      - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
           name: SonicAdvance-macOS
-          path: |
-            SonicAdvance
-            *.dylib
+          path: SonicAdvance-bios.dylib
 
   # ====================================================
-  # 3. LINUX BUILD (Clang -> Executável / .so)
+  # 3. LINUX BUILD (.so na raiz)
   # ====================================================
   build-linux:
     name: Build Linux (Clang)
@@ -77,14 +74,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang libsdl2-dev
 
-      - name: Compile Executable with Clang
+      - name: Compile Shared Object in Root
         run: |
-          clang -O2 pack-out/work/out/*.c -o SonicAdvance -lSDL2 -lm
+          clang -shared -fPIC -O2 ./*.c -o ./SonicAdvance-bios.so -lSDL2 -lm
 
-      - name: Upload Linux Bundle
+      - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
           name: SonicAdvance-Linux
-          path: |
-            SonicAdvance
-            *.so
+          path: SonicAdvance-bios.so
