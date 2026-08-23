@@ -1,4 +1,4 @@
-name: Build Sonic Advance Recomp (Rust)
+name: Build Sonic Advance Recomp (Clang)
 
 on:
   push:
@@ -9,81 +9,82 @@ on:
 
 jobs:
   # ====================================================
-  # 1. WINDOWS BUILD (.exe + .dll)
+  # 1. WINDOWS BUILD (Clang -> .exe / .dll)
   # ====================================================
   build-windows:
-    name: Build Windows (x64)
+    name: Build Windows (Clang)
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install SDL2 (Windows)
+        run: choco install sdl2 --no-progress
 
-      - name: Build Release Binary
-        run: cargo build --release
+      - name: Compile Executable & DLL with Clang
+        shell: cmd
+        run: |
+          clang -O2 pack-out/work/out/*.c -o SonicAdvance.exe -lSDL2 -lSDL2main -mwindows
 
       - name: Upload Windows Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: SonicAdvance-Windows-x64
+          name: SonicAdvance-Windows
           path: |
-            target/release/*.exe
-            target/release/*.dll
+            *.exe
+            *.dll
 
   # ====================================================
-  # 2. MACOS BUILD (Nativo / Apple Silicon & Intel)
+  # 2. MACOS BUILD (Clang -> Executável / .dylib)
   # ====================================================
   build-macos:
-    name: Build macOS
+    name: Build macOS (Clang)
     runs-on: macos-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install SDL2 (macOS)
+        run: brew install sdl2
 
-      - name: Build Release Binary
-        run: cargo build --release
+      - name: Compile Executable with Clang
+        run: |
+          clang -O2 pack-out/work/out/*.c -o SonicAdvance -lSDL2 -framework Cocoa
 
       - name: Upload macOS Bundle
         uses: actions/upload-artifact@v4
         with:
           name: SonicAdvance-macOS
           path: |
-            target/release/SonicAdvance*
-            target/release/*.dylib
+            SonicAdvance
+            *.dylib
 
   # ====================================================
-  # 3. LINUX BUILD (.so + Binário)
+  # 3. LINUX BUILD (Clang -> Executável / .so)
   # ====================================================
   build-linux:
-    name: Build Linux (x86_64)
+    name: Build Linux (Clang)
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install System Dependencies
+      - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libasound2-dev libudev-dev
+          sudo apt-get install -y clang libsdl2-dev
 
-      - name: Setup Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build Release Binary
-        run: cargo build --release
+      - name: Compile Executable with Clang
+        run: |
+          clang -O2 pack-out/work/out/*.c -o SonicAdvance -lSDL2 -lm
 
       - name: Upload Linux Bundle
         uses: actions/upload-artifact@v4
         with:
           name: SonicAdvance-Linux
           path: |
-            target/release/SonicAdvance*
-            target/release/*.so
+            SonicAdvance
+            *.so
