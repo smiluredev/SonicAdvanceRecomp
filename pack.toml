@@ -1,0 +1,31 @@
+[package]
+name = "SonicAdvance"
+version = "1.0.0"
+platforms = ["macos", "windows", "linux"]   # the default trio
+
+[image]
+rom-sha256  = "afc29e3325baf68a1822e88b25fcb59c8bdc29b8cdc48fa21c56defbd60ca020"    # required — the gate
+bios-sha256 = "fd2547724b505f487e6dcb29ec2ecff3af35a841a77ab2e85fd87350abd36570"    # required — the gate
+
+[runtime]                    # which gba-recomp modules ship in the binary
+menu = true                  # press-Escape in-game menu (see below)
+enhanced-audio = true        # per-channel sinc + soft-clip + engine-HLE shadow
+screen-sim = true            # panel simulation (crates/screen)
+engine-hle = "auto"          # auto | off | m4a | gax | rdrv  (pin = skip discovery)
+interpreter = true           # false = FULL RECOMP: no interpreter ships; a
+                             # dispatch miss halts loudly, and the build
+                             # refuses to package unless a soak run executed
+                             # zero interpreter-fallback steps
+
+[build]                      # build-time only — nothing here ships
+compiler = "clang"           # optional: pin the C compiler used to translate.
+                             # Default: a system cc/clang/gcc if present, else
+                             # the bundled TinyCC. Pin a real optimizing
+                             # compiler here for a shipped package. Any
+                             # cc-style program/path; works on all platforms.
+
+[output]
+binary = true
+c-source = true             # also emit the recompiled C tree with the
+                             # label set's function names applied
+                             # (sub_<addr> where unnamed)
